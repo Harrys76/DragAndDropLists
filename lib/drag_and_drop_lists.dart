@@ -23,6 +23,7 @@ import 'package:drag_and_drop_lists/drag_and_drop_list_wrapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 export 'package:drag_and_drop_lists/drag_and_drop_builder_parameters.dart';
 export 'package:drag_and_drop_lists/drag_and_drop_item.dart';
@@ -283,6 +284,16 @@ class DragAndDropLists extends StatefulWidget {
   /// disable when setting customDragTargets
   final bool constrainDraggingAxis;
 
+  final RefreshController refreshController;
+
+  final Function onRefresh;
+
+  final Function onLoading;
+
+  final bool enablePullDown;
+
+  final bool enablePullUp;
+
   DragAndDropLists({
     this.children,
     this.onItemReorder,
@@ -334,6 +345,11 @@ class DragAndDropLists extends StatefulWidget {
     this.listDragHandleVerticalAlignment = DragHandleVerticalAlignment.top,
     this.itemDragHandleVerticalAlignment = DragHandleVerticalAlignment.center,
     this.constrainDraggingAxis = true,
+    this.refreshController,
+    this.onRefresh,
+    this.onLoading,
+    this.enablePullDown = true,
+    this.enablePullUp = false,
     Key key,
   }) : super(key: key) {
     if (listGhost == null &&
@@ -460,47 +476,61 @@ class DragAndDropListsState extends State<DragAndDropLists> {
         );
       } else {
         if (widget.listDivider != null) {
-          listView = ListView.separated(
-            scrollDirection: widget.axis,
-            controller: _scrollController,
-            physics: widget.disableScrolling
-                ? const NeverScrollableScrollPhysics()
-                : null,
-            separatorBuilder: (_, index) => widget.listDividerOnLastChild
-                ? widget.listDivider
-                : index + 1 >= (widget.children?.length ?? 0)
-                    ? Container()
-                    : widget.listDivider,
-            itemCount: (widget.children?.length ?? 0) + 1,
-            itemBuilder: (context, index) {
-              if (index < (widget.children?.length ?? 0)) {
-                return DragAndDropListWrapper(
-                  dragAndDropList: widget.children[index],
-                  parameters: parameters,
-                );
-              } else {
-                return dragAndDropListTarget;
-              }
-            },
+          listView = SmartRefresher(
+            controller: widget.refreshController ?? RefreshController(),
+            onRefresh: widget.onRefresh,
+            onLoading: widget.onLoading,
+            enablePullDown: widget.enablePullDown,
+            enablePullUp: widget.enablePullUp,
+            child: ListView.separated(
+              scrollDirection: widget.axis,
+              controller: _scrollController,
+              physics: widget.disableScrolling
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
+              separatorBuilder: (_, index) => widget.listDividerOnLastChild
+                  ? widget.listDivider
+                  : index + 1 >= (widget.children?.length ?? 0)
+                      ? Container()
+                      : widget.listDivider,
+              itemCount: (widget.children?.length ?? 0) + 1,
+              itemBuilder: (context, index) {
+                if (index < (widget.children?.length ?? 0)) {
+                  return DragAndDropListWrapper(
+                    dragAndDropList: widget.children[index],
+                    parameters: parameters,
+                  );
+                } else {
+                  return dragAndDropListTarget;
+                }
+              },
+            ),
           );
         } else {
-          listView = ListView.builder(
-            scrollDirection: widget.axis,
-            physics: widget.disableScrolling
-                ? const NeverScrollableScrollPhysics()
-                : null,
-            controller: _scrollController,
-            itemCount: (widget.children?.length ?? 0) + 1,
-            itemBuilder: (context, index) {
-              if (index < (widget.children?.length ?? 0)) {
-                return DragAndDropListWrapper(
-                  dragAndDropList: widget.children[index],
-                  parameters: parameters,
-                );
-              } else {
-                return dragAndDropListTarget;
-              }
-            },
+          listView = SmartRefresher(
+            controller: widget.refreshController ?? RefreshController(),
+            onRefresh: widget.onRefresh,
+            onLoading: widget.onLoading,
+            enablePullDown: widget.enablePullDown,
+            enablePullUp: widget.enablePullUp,
+            child: ListView.builder(
+              scrollDirection: widget.axis,
+              physics: widget.disableScrolling
+                  ? const NeverScrollableScrollPhysics()
+                  : null,
+              controller: _scrollController,
+              itemCount: (widget.children?.length ?? 0) + 1,
+              itemBuilder: (context, index) {
+                if (index < (widget.children?.length ?? 0)) {
+                  return DragAndDropListWrapper(
+                    dragAndDropList: widget.children[index],
+                    parameters: parameters,
+                  );
+                } else {
+                  return dragAndDropListTarget;
+                }
+              },
+            ),
           );
         }
       }
