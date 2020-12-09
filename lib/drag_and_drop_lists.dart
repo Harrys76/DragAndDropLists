@@ -294,6 +294,8 @@ class DragAndDropLists extends StatefulWidget {
 
   final bool enablePullUp;
 
+  final Widget footer;
+
   DragAndDropLists({
     this.children,
     this.onItemReorder,
@@ -350,6 +352,7 @@ class DragAndDropLists extends StatefulWidget {
     this.onLoading,
     this.enablePullDown = true,
     this.enablePullUp = false,
+    this.footer,
     Key key,
   }) : super(key: key) {
     if (listGhost == null &&
@@ -482,6 +485,7 @@ class DragAndDropListsState extends State<DragAndDropLists> {
             onLoading: widget.onLoading,
             enablePullDown: widget.enablePullDown,
             enablePullUp: widget.enablePullUp,
+            footer: widget.footer,
             child: ListView.separated(
               scrollDirection: widget.axis,
               controller: _scrollController,
@@ -513,6 +517,7 @@ class DragAndDropListsState extends State<DragAndDropLists> {
             onLoading: widget.onLoading,
             enablePullDown: widget.enablePullDown,
             enablePullUp: widget.enablePullUp,
+            footer: widget.footer,
             child: ListView.builder(
               scrollDirection: widget.axis,
               physics: widget.disableScrolling
